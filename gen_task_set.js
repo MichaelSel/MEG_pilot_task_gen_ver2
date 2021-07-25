@@ -34,8 +34,8 @@ async function gen_task_set (sub_id,prefix="MEG2p",root='./task_sets',num_of_blo
 
     let blocks = []
     for (let i = 0; i < num_of_blocks; i++) {
-        const set1 = make_stimuli(sub_name,real_Qs,decoys,[0,12],12,[0,2,4,7,9]) /**Pentatonic*/
-        const set2 = make_stimuli(sub_name,real_Qs,decoys,[0,12],12,[0,1,2,3,5]) /**Worst 5-note set*/
+        const set1 = make_stimuli(sub_name,real_Qs,decoys,[0,12],16,[0,2,4,7,9]) /**Pentatonic*/
+        const set2 = make_stimuli(sub_name,real_Qs,decoys,[0,12],16,[0,1,2,3,5]) /**Worst 5-note set*/
         let block = [...set1,...set2]
         blocks.push(shuffle(block))
     }
@@ -85,4 +85,4 @@ module.exports = gen_task_set
 
 
 
-gen_task_set(2001)
+gen_task_set(2006)

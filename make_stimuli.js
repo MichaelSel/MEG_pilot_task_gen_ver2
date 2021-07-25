@@ -27,6 +27,8 @@ const unique_in_array = (list) => {
     return unique
 }
 
+const all_diatonic_modes = edo.scale([0,2,4,5,7,9,11]).get.modes()
+
 function shuffle(a) {
     for (let i = a.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -48,8 +50,12 @@ const make_stimuli = function (subject_id,realQs=10, decoys=10,range=[0,12],leng
     //Shift up or down?
     let set_shift_array = shuffle(Array.from(Array(realQs+decoys)).map((el,i)=>(i<(realQs+decoys)/2)?-1:1))
 
-    //Shift position (2nd to last or 3rd to last)
-    let set_note_to_shift = shuffle(Array.from(Array(realQs+decoys)).map((el,i)=>(i<(realQs+decoys)/2)?length-2:length-3))
+    // //Shift position (2nd to last or 3rd to last)
+    // let set_note_to_shift = shuffle(Array.from(Array(realQs+decoys)).map((el,i)=>(i<(realQs+decoys)/2)?length-2:length-3))
+
+    //Shift position (Always last)
+
+    let set_note_to_shift = shuffle(Array.from(Array(realQs+decoys)).map(()=>length-1))
 
     //Transposition array
     let random_start = rand_int_in_range(0,6)
@@ -73,16 +79,20 @@ const make_stimuli = function (subject_id,realQs=10, decoys=10,range=[0,12],leng
         //Make sure there are no repeated notes in any of the test conditions
         if(edo.convert.to_steps(pitches).indexOf(0)!=-1) continue
 
-        //Transpose melody
-        let transposition = transpositions.shift()
-        pitches = pitches.map(p=>p+transposition)
 
+
+        let probe = [...pitches]
+        let shift_dir = 0
+        let shift_amount = 0
+        let shift_pos = 0
+        let decoy = true
         if(Q.length<= realQs) {
 
             let shifted = [...pitches] //make a copy of the original melody (already transposed)
             let note_to_shift = set_note_to_shift[0]
             let amount_to_shift = set_shift_array[0]
             let shift_direction = (amount_to_shift==-1) ? "down" : "up"
+
 
             shifted[note_to_shift] = shifted[note_to_shift] + amount_to_shift
 
@@ -92,14 +102,34 @@ const make_stimuli = function (subject_id,realQs=10, decoys=10,range=[0,12],leng
             //if shifted note doesn't violate set: discard
             if(unique_in_shifted<=set.length) continue
 
-            let shift_pos = set_note_to_shift.shift()
-            let shift_amount = set_shift_array.shift()
-            Q.push({subject_id:subject_id,probe:shifted,shift_dir:shift_direction, shift_amount:shift_amount,shift_position: shift_pos,set:set,mode:Q_mode,mode_num:mode_num,transposition:transposition, decoy:false})
-        } else {
-            Q.push({subject_id:subject_id,probe:pitches,shift_dir:0, shift_amount:0,shift_position: 0,set:set,mode:Q_mode,mode_num:mode_num,transposition:transposition, decoy:true})
+            //if shifted notes fits into a diatonic set: discard
+
+            probe = shifted
+            shift_dir = shift_direction
+
+
+            decoy = false
+
+            //Discard if pitches create diatonic set
+            unique_pitches = Array.from(new Set(probe.map(p=>edo.mod(p,12))))
+            let is_subset = edo.scale(unique_pitches).is.subset(all_diatonic_modes)
+            if(is_subset) continue
         }
 
+
+
+        shift_pos = set_note_to_shift.shift()
+        shift_amount = set_shift_array.shift()
+
+        //Transpose melody
+        let transposition = transpositions.shift()
+        probe = probe.map(p=>p+transposition)
+
         modes.shift()
+
+        Q.push({subject_id:subject_id,probe:probe,shift_dir:shift_dir, shift_amount:shift_amount,shift_position: shift_pos,set:set,mode:Q_mode,mode_num:mode_num,transposition:transposition, decoy:decoy})
+
+
 
 
     }
