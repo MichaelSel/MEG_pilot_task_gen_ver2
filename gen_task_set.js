@@ -19,7 +19,7 @@ function shuffle(a) {
 }
 
 /**Set Settings here*/
-async function gen_task_set (sub_id,prefix="MEG2p",root='./task_sets',num_of_blocks=6) {
+async function gen_task_set (sub_id,prefix="MEG2p",root='./task_sets',num_of_blocks=20) {
     let sub = matrix.filter(row=>row.subject_id==sub_id)[0]
     const edo = new EDO(12)
     const sub_name = prefix + "0".repeat(4-String(sub_id).length) + String(sub_id)
@@ -27,7 +27,8 @@ async function gen_task_set (sub_id,prefix="MEG2p",root='./task_sets',num_of_blo
     make_folder(root,"/" + sub_name)
     make_folder(root + "/" + sub_name,["/audio","/csv"])
 
-    const Qs_per_set = 10
+
+    const Qs_per_set = 15 // was 10, changed to 15 at sub 2011
     const pc_decoy = 0.3
     const decoys = Math.floor(Qs_per_set*pc_decoy)
     const real_Qs = Qs_per_set - decoys
@@ -85,4 +86,4 @@ module.exports = gen_task_set
 
 
 
-gen_task_set(2006)
+gen_task_set(2013)
